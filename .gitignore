@@ -1,3 +1,6 @@
-nhclient
-nhclient.exe
+webclient
+webclient32.exe
+webclient64.exe
 dist/
+rsrc.syso
+icon.go
