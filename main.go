@@ -7,13 +7,21 @@ import (
 	"os/user"
 	"path"
 
+	"github.com/BurntSushi/toml"
 	"github.com/zserge/lorca"
 )
 
+// Config is struct for configuration
+type Config struct {
+	URL    string
+	Width  int
+	Height int
+}
+
 var (
 	configDir  string
-	defaultURL = "http://127.0.0.1:8080"
-	urlfile    string
+	defaultURL = "http://www.qq.com"
+	configfile string
 )
 
 func init() {
@@ -27,17 +35,21 @@ func init() {
 }
 
 func main() {
-	urlfile = path.Join(configDir, "url.txt")
-	f, _ := os.OpenFile(urlfile, os.O_RDWR|os.O_CREATE, 0755)
+	configfile = path.Join(configDir, "config.toml")
+	f, _ := os.OpenFile(configfile, os.O_RDWR|os.O_CREATE, 0755)
 	defer f.Close()
-	b, _ := ioutil.ReadFile(urlfile)
+	b, _ := ioutil.ReadFile(configfile)
+	c := Config{}
 	if len(b) == 0 {
-		f.WriteString(defaultURL)
+		c := Config{URL: defaultURL, Width: 1280, Height: 720}
+		toml.NewEncoder(f).Encode(c)
 	} else {
-		b, _ := ioutil.ReadFile(urlfile)
-		defaultURL = string(b)
+		_, err := toml.DecodeFile(configfile, &c)
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
-	ui, err := lorca.New(defaultURL, "", 1, 1)
+	ui, err := lorca.New(c.URL, "", c.Width, c.Height)
 	if err != nil {
 		log.Fatal(err)
 	}
